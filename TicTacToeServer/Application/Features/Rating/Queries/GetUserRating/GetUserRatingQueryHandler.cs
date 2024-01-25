@@ -3,6 +3,7 @@ using Application.Features.Rating.Shared;
 using CQRS.Abstractions;
 using Domain;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using Shared;
 
@@ -11,11 +12,13 @@ namespace Application.Features.Rating.Queries.GetUserRating;
 internal class GetUserRatingQueryHandler : IQueryHandler<GetUserRatingQuery, UserRatingResponse?>
 {
     private readonly IMongoCollection<UserRating> _ratings;
+    private readonly UserManager<User> _userManager;
     private readonly IMediator _mediator;
 
-    public GetUserRatingQueryHandler(IMongoDatabase mongoDb, IMediator mediator)
+    public GetUserRatingQueryHandler(IMongoDatabase mongoDb, IMediator mediator, UserManager<User> userManager)
     {
         _mediator = mediator;
+        _userManager = userManager;
         _ratings = mongoDb.GetCollection<UserRating>(Constants.MongoDbRatingCollection);
     }
 
@@ -27,9 +30,8 @@ internal class GetUserRatingQueryHandler : IQueryHandler<GetUserRatingQuery, Use
             return null;
         
         var res = await _ratings.FindAsync(entity => entity.Id == userId, cancellationToken: cancellationToken);
-        var userRatingEntity = res.FirstOrDefault(cancellationToken: cancellationToken);
-        return userRatingEntity is null
-            ? new UserRatingResponse(userId, 0)
-            : new UserRatingResponse(userRatingEntity.Id, userRatingEntity.Rating);
+        var userRatingEntity = res.First(cancellationToken: cancellationToken);
+        var user = await _userManager.FindByIdAsync(userRatingEntity.Id.ToString());
+        return new UserRatingResponse(user!.UserName!, userRatingEntity.Rating);
     }
 }

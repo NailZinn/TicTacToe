@@ -3,19 +3,22 @@ using Application.Features.Rating.Shared;
 using CQRS.Abstractions;
 using Domain;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using Shared;
 
-namespace Application.Features.Rating.Commands;
+namespace Application.Features.Rating.Commands.UpdateUserRating;
 
 internal class UpdateUserRatingCommandHandler : ICommandHandler<UpdateUserRatingCommand, UserRatingResponse?>
 {
     private readonly IMongoCollection<UserRating> _ratings;
+    private readonly UserManager<User> _userManager;
     private readonly IMediator _mediator;
 
-    public UpdateUserRatingCommandHandler(IMongoDatabase mongoDatabase, IMediator mediator)
+    public UpdateUserRatingCommandHandler(IMongoDatabase mongoDatabase, IMediator mediator, UserManager<User> userManager)
     {
         _mediator = mediator;
+        _userManager = userManager;
         _ratings = mongoDatabase.GetCollection<UserRating>(Constants.MongoDbRatingCollection);
     }
     
@@ -36,6 +39,7 @@ internal class UpdateUserRatingCommandHandler : ICommandHandler<UpdateUserRating
             IsUpsert = true
         };
         var userRating = await _ratings.FindOneAndUpdateAsync<UserRating>(entity => entity.Id == userId, update, options, cancellationToken);
-        return new UserRatingResponse(userRating.Id, userRating.Rating);
+        var username = (await _userManager.FindByIdAsync(userId.ToString()))!.UserName!;
+        return new UserRatingResponse(username, userRating.Rating);
     }
 }

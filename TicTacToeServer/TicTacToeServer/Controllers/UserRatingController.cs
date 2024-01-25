@@ -1,4 +1,4 @@
-﻿using Application.Features.Rating.Commands;
+﻿using Application.Features.Rating.Commands.UpdateUserRating;
 using Application.Features.Rating.Queries.GetUserRating;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

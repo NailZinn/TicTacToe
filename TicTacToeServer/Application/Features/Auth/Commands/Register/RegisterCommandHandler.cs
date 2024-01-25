@@ -3,18 +3,22 @@ using CQRS.Abstractions;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using MongoDB.Driver;
+using Shared;
 
 namespace Application.Features.Auth.Commands.Register;
 
 internal class RegisterCommandHandler : ICommandHandler<RegisterCommand, IdentityResult>
 {
     private readonly UserManager<User> _userManager;
+    private readonly IMongoCollection<UserRating> _ratings;
     private readonly IMediator _mediator;
 
-    public RegisterCommandHandler(UserManager<User> userManager, IMediator mediator)
+    public RegisterCommandHandler(UserManager<User> userManager, IMediator mediator, IMongoDatabase mongoDatabase)
     {
         _userManager = userManager;
         _mediator = mediator;
+        _ratings = mongoDatabase.GetCollection<UserRating>(Constants.MongoDbRatingCollection);
     }
 
     public async Task<IdentityResult> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -33,6 +37,12 @@ internal class RegisterCommandHandler : ICommandHandler<RegisterCommand, Identit
         var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
             return result;
+        
+        await _ratings.InsertOneAsync(new UserRating
+        {
+            Id = user.Id,
+            Rating = 0
+        }, cancellationToken: cancellationToken);
 
         var loginCommand = new LoginCommand(request.Username, request.Password);
         return await _mediator.Send(loginCommand, cancellationToken);
