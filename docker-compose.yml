@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  Postgres:
+    image: postgres:alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: myPassword
+      POSTGRES_DB: myDB
+  RabbitMq:
+    image: rabbitmq:3-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "admin"
+  MongoStorage:
+    image: mongo:6-jammy
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    restart: always
