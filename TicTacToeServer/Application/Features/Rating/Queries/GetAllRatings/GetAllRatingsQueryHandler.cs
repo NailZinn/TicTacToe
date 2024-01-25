@@ -1,5 +1,6 @@
 ﻿using Application.Features.Rating.Shared;
 using Application.Shared;
+using Application.Shared.Extensions;
 using CQRS.Abstractions;
 using Domain;
 using Microsoft.AspNetCore.Identity;
@@ -22,13 +23,13 @@ internal class GetAllRatingsQueryHandler : IQueryHandler<GetAllRatingsQuery, Pag
     
     public async Task<PaginationWrapper<UserRatingResponse>> Handle(GetAllRatingsQuery request, CancellationToken cancellationToken)
     {
+        var page = request.Page;
+        if (page <= 0) page = 1; 
         var sort = Builders<UserRating>.Sort.Descending(entity => entity.Rating);
         var data = await _ratings
             .Find(new BsonDocument())
             .Sort(sort)
-            .Skip((request.Page - 1) * request.PageSize)
-            .Limit(request.PageSize)
-            .ToListAsync(cancellationToken);
+            .PaginateAsync(page, request.PageSize, cancellationToken);
         var count = await _ratings.CountDocumentsAsync(new BsonDocument(), cancellationToken: cancellationToken);
         var resData = new List<UserRatingResponse>();
         foreach (var userRating in data)
@@ -37,6 +38,6 @@ internal class GetAllRatingsQueryHandler : IQueryHandler<GetAllRatingsQuery, Pag
             var userRatingResponse = new UserRatingResponse(user!.UserName!, userRating.Rating);
             resData.Add(userRatingResponse);
         }
-        return new PaginationWrapper<UserRatingResponse>(resData, request.Page, request.PageSize, count);
+        return new PaginationWrapper<UserRatingResponse>(resData, page, request.PageSize, count);
     }
 }
