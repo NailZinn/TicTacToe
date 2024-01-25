@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Modal, Button } from 'antd'
+import { HttpTransportType, HubConnectionBuilder } from '@microsoft/signalr'
 
 import './game-page.css'
 
@@ -7,6 +8,26 @@ const Game = () => {
 
     const [squares, setSquares] = useState(Array(9).fill(''))
     const [isFinished, setIsFinished] = useState(false);
+    const [connection, setConnection] = useState(null)
+
+    useEffect(() => {
+        if (!connection) {
+            const newConnection = new HubConnectionBuilder()
+                .withUrl('https://localhost:7051/gameHub', {
+                    skipNegotiation: true,
+                    transport: HttpTransportType.WebSockets
+                })
+                .build()
+            setConnection(newConnection)
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        if (connection) {
+            connection.start()
+        }
+    }, [connection])
 
     const updateSquare = (square, value) => {
         squares[square] = value;
