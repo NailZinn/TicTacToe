@@ -8,6 +8,7 @@ using TicTacToeServer.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
+    .AddCors()
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
     .AddAppDbContext<ApplicationDbContext>(builder.Configuration.GetConnectionString(ConnectionStringNames.Postgres))
@@ -30,6 +31,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseMiddleware<MoveAuthCookieToHeaderMiddleware>();
+
+app.UseCors(builder =>
+{
+    builder
+		.AllowCredentials()
+		.AllowAnyHeader()
+		.AllowAnyMethod()
+		.SetIsOriginAllowed(origin =>
+		{
+			if (string.IsNullOrWhiteSpace(origin)) return false;
+
+			return origin.ToLower().StartsWith("http://localhost") || origin.ToLower().StartsWith("https://localhost");
+		});
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
