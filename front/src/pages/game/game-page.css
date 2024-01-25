@@ -1,0 +1,58 @@
+.game-field {
+    width: 360px;
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.game-field-row {
+    display: flex;
+}
+
+.game-cell {
+    width: 120px;
+    height: 120px;
+    border: 3px solid coral;
+    text-align: center;
+    font-size: 80px;
+}
+
+.game-cell:hover {
+    cursor: pointer;
+}
+
+.game-field-row:first-child > .game-cell:first-child {
+    border-top: none;
+    border-left: none;
+}
+
+.game-field-row:first-child > .game-cell:last-child {
+    border-top: none;
+    border-right: none;
+}
+
+.game-field-row:first-child > .game-cell:nth-child(2) {
+    border-top: none;
+}
+
+.game-field-row:last-child > .game-cell:first-child {
+    border-bottom: none;
+    border-left: none;
+}
+
+.game-field-row:last-child > .game-cell:last-child {
+    border-bottom: none;
+    border-right: none;
+}
+
+.game-field-row:last-child > .game-cell:nth-child(2) {
+    border-bottom: none;
+}
+
+.game-field-row:nth-child(2) > .game-cell:first-child {
+    border-left: none;
+}
+
+.game-field-row:nth-child(2) > .game-cell:last-child {
+    border-right: none;
+}
