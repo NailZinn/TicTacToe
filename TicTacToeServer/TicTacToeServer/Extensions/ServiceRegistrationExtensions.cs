@@ -21,7 +21,7 @@ public static class ServiceRegistrationExtensions
             {
                 options.UseNpgsql(connectionString);
             })
-            .AddIdentity<User, IdentityRole>(options =>
+            .AddIdentity<User, IdentityRole<Guid>>(options =>
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 1;
@@ -53,9 +53,13 @@ public static class ServiceRegistrationExtensions
 
     public static IServiceCollection AddMongoDb(this IServiceCollection services, string? connectionString)
     {
-        var mongoClient = new MongoClient(connectionString);
-        var mongoDb = mongoClient.GetDatabase("main");
-
+        services
+            .AddScoped<IMongoDatabase>(_ =>
+            {
+                var mongoClient = new MongoClient(connectionString);
+                return mongoClient.GetDatabase("main");
+            });
+        
         return services;
     }
 

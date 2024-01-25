@@ -4,6 +4,7 @@ using System.Text;
 using CQRS.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Shared;
 using Shared.Options;
 
 namespace Application.Features.Auth.Commands.GenerateToken;
@@ -26,7 +27,7 @@ internal class GenerateTokenCommandHandler : ICommandHandler<GenerateTokenComman
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new("UserId", request.UserId)
+            new(Constants.JwtUserIdClaimType, request.UserId.ToString())
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor

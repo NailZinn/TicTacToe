@@ -2,4 +2,4 @@
 
 namespace Application.Features.Auth.Commands.GenerateToken;
 
-internal record GenerateTokenCommand(string UserId) : ICommand<string>;
+internal record GenerateTokenCommand(Guid UserId) : ICommand<string>;
