@@ -6,6 +6,17 @@
     background-color: coral;
 }
 
+.logout {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    font-family: cursive;
+    font-size: 20px;
+    font-weight: 700;
+    color: bisque;
+    cursor: pointer;
+}
+
 .game-title {
     width: 200px;
     font-family: cursive;
@@ -19,7 +30,7 @@
     cursor: pointer;
 }
 
-.game-title:hover {
+.game-title:hover, .logout:hover {
     color: white;
 }
 

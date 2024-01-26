@@ -1,3 +1,3 @@
 ﻿namespace Application.Features.Rating.Shared;
 
-public record UserRatingResponse(Guid UserId, long Rating);
+public record UserRatingResponse(string Username, long Rating);

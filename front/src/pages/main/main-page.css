@@ -32,3 +32,13 @@
     cursor: pointer;
     color: white;
 }
+
+.error-label {
+    position: absolute;
+    top: 0.5wh;
+    left: calc(50% - 120px);
+    background: #EA4343; 
+    padding: 0 5px;
+    z-index: 1;
+    color: white;
+}

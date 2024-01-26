@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using Shared.Options;
+using TicTacToeServer.Consumers;
 
 namespace TicTacToeServer.Extensions;
 
@@ -41,6 +42,8 @@ public static class ServiceRegistrationExtensions
         services
             .AddMassTransit(configurator =>
             {
+                configurator.AddConsumer<UpdateRatingConsumer>();
+                
                 configurator.UsingRabbitMq((ctx, cfg) =>
                 {
                     cfg.Host(connectionString);

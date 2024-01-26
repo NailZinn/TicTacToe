@@ -24,3 +24,32 @@ services:
     ports:
       - "27017:27017"
     restart: always
+  TicTacToeServer:
+    image: tictactoeserver
+    container_name: TicTacToeServer
+    ports:
+      - "7051:80"
+    restart: always
+    environment:
+      - ConnectionStrings__Postgres=User ID=root;Password=myPassword;Host=postgres;Port=5432;Database=myDB;Pooling=true;Connection Lifetime=0;
+      - ConnectionStrings__RabbitMq=amqp://admin:admin@rabbitmq:5672
+      - ConnectionStrings__MongoDb=mongodb://mongodb:27017
+      - JwtSettings__Issuer=TicTacToeServer
+      - JwtSettings__Audience=TicTacToeServer
+      - JwtSettings__Key=somEverYsecuReandsecRetkeYforjWt
+      - ASPNETCORE_URLS=http://+:80
+    build:
+      context: ./TicTacToeServer
+      dockerfile: Dockerfile
+    depends_on:
+      - Postgres
+      - RabbitMq
+      - MongoStorage
+  TicTacToeFront:
+    image: tictactoefront
+    container_name: TicTacToeFront
+    ports:
+      - "3000:3000"
+    build:
+      context: ./front
+      dockerfile: Dockerfile

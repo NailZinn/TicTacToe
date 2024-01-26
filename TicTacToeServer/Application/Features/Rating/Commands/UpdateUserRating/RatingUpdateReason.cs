@@ -1,4 +1,4 @@
-﻿namespace Application.Features.Rating.Commands;
+﻿namespace Application.Features.Rating.Commands.UpdateUserRating;
 
 public enum RatingUpdateReason
 {

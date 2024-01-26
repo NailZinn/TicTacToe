@@ -22,6 +22,48 @@ namespace DataAccess.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Domain.Game", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GameField")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(9)
+                        .HasColumnType("character(9)")
+                        .HasDefaultValue("         ")
+                        .IsFixedLength();
+
+                    b.Property<long>("MaxRating")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("Player1Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("Player2Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Player1Id")
+                        .IsUnique();
+
+                    b.HasIndex("Player2Id")
+                        .IsUnique();
+
+                    b.ToTable("Games");
+                });
+
             modelBuilder.Entity("Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -29,6 +71,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AsWatcherId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -72,7 +117,45 @@ namespace DataAccess.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AsWatcherId");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Domain.Game", b =>
+                {
+                    b.HasOne("Domain.User", "Player1")
+                        .WithOne("AsOwner")
+                        .HasForeignKey("Domain.Game", "Player1Id");
+
+                    b.HasOne("Domain.User", "Player2")
+                        .WithOne("AsPlayer")
+                        .HasForeignKey("Domain.Game", "Player2Id");
+
+                    b.Navigation("Player1");
+
+                    b.Navigation("Player2");
+                });
+
+            modelBuilder.Entity("Domain.User", b =>
+                {
+                    b.HasOne("Domain.Game", "AsWatcher")
+                        .WithMany("Others")
+                        .HasForeignKey("AsWatcherId");
+
+                    b.Navigation("AsWatcher");
+                });
+
+            modelBuilder.Entity("Domain.Game", b =>
+                {
+                    b.Navigation("Others");
+                });
+
+            modelBuilder.Entity("Domain.User", b =>
+                {
+                    b.Navigation("AsOwner");
+
+                    b.Navigation("AsPlayer");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState} from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Modal, Form, Input, Button } from 'antd'
+import { axiosInstance } from "../../axios";
 
 import './main-page.css'
 import '../../shared/styles.css'
@@ -9,115 +10,90 @@ const MainPage = () => {
 
     const navigate = useNavigate()
 
+    const pageSize = 15;
     const [isModalOpened, setIsModalOpened] = useState(false)
     const [numberOfFetches, setNumberOfFetches] = useState(0)
-    const [games, setGames] = useState([
-        {
-            username: 'User 1',
-            createdAt: '25-01-2024',
-            id: '123',
-            enterMessage: 'Play'
-        },
-        {
-            username: 'User 2',
-            createdAt: '25-01-2024',
-            id: '124',
-            enterMessage: 'Play'
-        },
-        {
-            username: 'User 3',
-            createdAt: '25-01-2024',
-            id: '125',
-            enterMessage: 'Play'
-        },
-        {
-            username: 'User 4',
-            createdAt: '25-01-2024',
-            id: '126',
-            enterMessage: 'Play'
-        },
-        {
-            username: 'User 5',
-            createdAt: '25-01-2024',
-            id: '127',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 6',
-            createdAt: '25-01-2024',
-            id: '128',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 7',
-            createdAt: '25-01-2024',
-            id: '129',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 8',
-            createdAt: '25-01-2024',
-            id: '130',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 9',
-            createdAt: '25-01-2024',
-            id: '131',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 10',
-            createdAt: '25-01-2024',
-            id: '132',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 11',
-            createdAt: '25-01-2024',
-            id: '133',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 12',
-            createdAt: '25-01-2024',
-            id: '134',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 13',
-            createdAt: '25-01-2024',
-            id: '135',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 14',
-            createdAt: '25-01-2024',
-            id: '136',
-            enterMessage: 'Watch'
-        },
-        {
-            username: 'User 15',
-            createdAt: '25-01-2024',
-            id: '137',
-            enterMessage: 'Watch'
-        },
-    ])
+    const [games, setGames] = useState([])
+    const [showLabel, setShowLabel] = useState(false)
+    const [labelText, setLabelText] = useState("")
 
+    useEffect(() => {
+        fetchGamesAxios()
+    }, [])
+    
+    const fetchGamesAxios = () => {
+        axiosInstance.get(`/games?page=${numberOfFetches + 1}&pageSize=${pageSize}`)
+            .then(response => response.data)
+            .then(data => {
+                setGames(prev => [...prev, ...data.data.map(mapGame)])
+                setNumberOfFetches(x => x + 1)
+            })
+            .catch(e => {
+                navigate('/authorization')
+            })
+    }
+    
+    const mapGame = (game) => {
+        const formatDate = (date) => {
+            date = new Date(date);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            return `${day}-${month}-${year} ${hours}:${minutes}`;
+        }
+        
+        return {
+            id: game.id,
+            username: game.ownerUserName,
+            createdAt: formatDate(game.createdAt),
+            enterMessage: game.status === 0 ? 'Play' : 'Watch'
+        }
+    }
     const fetchGames = (e) => {
-        if (e.currentTarget.scrollTop >= 185 + numberOfFetches * 45) {
-            setGames(prev => [ ...prev, {
-                username: 'User 16',
-                createdAt: '25-01-2024',
-                id: 138 + numberOfFetches,
-                enterMessage: 'Watch'
-            }])
-            setNumberOfFetches(numberOfFetches + 1)
+        if (e.currentTarget.scrollTop >= 185 + numberOfFetches * 45 * pageSize) {
+            fetchGamesAxios()
         }
     }
 
     const sendForm = (values) => {
+        axiosInstance.post(`/games`, values)
+            .then(response => response.data)
+            .then(data => {
+                if (data)
+                    navigate(`/game/${data.id}`)
+                else
+                    showLabelFunc('Ваш рейтинг выше выбранного максимального')
+            })
+            .catch(e => {
+                navigate('/')
+            })
         setIsModalOpened(false)
+    }
+    
+    const joinGame = (gameId) => {
+        axiosInstance.post(`/games/join`, {gameId})
+            .then(response => response.data)
+            .then(data => {
+                if (data.success)
+                    navigate(`/game/${gameId}`)
+                else 
+                {
+                    showLabelFunc('Игра для вас недоступна')
+                    navigate(`/`)
+                }
+            })
+            .catch(e => {
+                showLabelFunc('Не удалось подключиться к игре')
+            })
+    }
+    
+    const showLabelFunc = (text) => {
+        setLabelText(text)
+        setShowLabel(true)
+        setTimeout(() => setShowLabel(false), 2000)
     }
 
     return (
@@ -135,12 +111,18 @@ const MainPage = () => {
                                 <div>{ game.id }</div>
                                 <div>{ game.username }</div>
                                 <div>{ game.createdAt }</div>
-                                <div className='enter-message'>{ game.enterMessage }</div>
+                                <div className='enter-message' onClick={ _ => joinGame(game.id) }>{ game.enterMessage }</div>
                             </div>
                         ))
                     }
                 </div>
             </div>
+            {
+                showLabel &&
+                <label className='error-label'>
+                    {labelText}
+                </label>
+            }
             <Modal
                 open={ isModalOpened }
                 onOk={ () => setIsModalOpened(false) }

@@ -29,3 +29,11 @@
 .item:last-child {
     margin-bottom: 8px;
 }
+
+.sign-button {
+    text-align: center;
+}
+
+.sign-button:hover {
+    cursor: pointer;
+}
