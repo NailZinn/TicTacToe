@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Shared;
 using TicTacToeServer.Dto;
 
 namespace TicTacToeServer.Hubs;
@@ -17,10 +19,10 @@ public class GameHub : Hub<IGameHubClient>
 
         Games.AddOrUpdate(
             key: gameId,
-            addValue: [Context.UserIdentifier!],
+            addValue: [GetUserId()],
             updateValueFactory: (_, value) =>
             {
-                newPlayer = value.Add(Context.UserIdentifier!);
+                newPlayer = value.Add(GetUserId());
                 return value;
             });
 
@@ -29,7 +31,7 @@ public class GameHub : Hub<IGameHubClient>
             return;
         }
 
-        if (Games[gameId].Count >= 2)
+        if (Games[gameId].Count == 2)
         {
             var random = Random.Shared;
             char[] symbols = ['X', 'O'];
@@ -39,13 +41,13 @@ public class GameHub : Hub<IGameHubClient>
             var messageForSender = new StartGameMessage(symbols[currentPlayerSymbolIndex], currentPlayerTurn);
             var messageForReceiver = new StartGameMessage(symbols[1 - currentPlayerSymbolIndex], !currentPlayerTurn);
 
-            await Clients.User(Context.UserIdentifier!).ReceiveStartMessageAsync(messageForSender);
-            await Clients.Users(UserConnections[Games[gameId].First(x => x != Context.UserIdentifier!)])
+            await Clients.User(GetUserId()).ReceiveStartMessageAsync(messageForSender);
+            await Clients.Users(UserConnections[Games[gameId].First(x => x != GetUserId())])
                 .ReceiveStartMessageAsync(messageForReceiver);
         }
         else if (Games[gameId].Count > 2)
         {
-            await Clients.User(Context.UserIdentifier!).ReceiveWatcherMessageAsync();
+            await Clients.User(GetUserId()).ReceiveWatcherMessageAsync();
         }
         else
         {
@@ -61,7 +63,7 @@ public class GameHub : Hub<IGameHubClient>
     public override Task OnConnectedAsync()
     {
         UserConnections.AddOrUpdate(
-            key: Context.UserIdentifier!,
+            key: GetUserId(),
             addValue: [Context.ConnectionId],
             updateValueFactory: (_, value) =>
             {
@@ -74,8 +76,13 @@ public class GameHub : Hub<IGameHubClient>
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        UserConnections[Context.UserIdentifier!].Remove(Context.ConnectionId);
+        UserConnections[GetUserId()].Remove(Context.ConnectionId);
 
         return Task.CompletedTask;
+    }
+
+    private string GetUserId()
+    {
+        return Context.User!.FindFirstValue(Constants.JwtUserIdClaimType)!;
     }
 }

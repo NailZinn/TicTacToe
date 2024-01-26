@@ -19,7 +19,7 @@ const Game = () => {
     useEffect(() => {
         if (!connection) {
             const newConnection = new HubConnectionBuilder()
-                .withUrl('https://localhost:7051/gameHub', {
+                .withUrl('http://localhost:7051/gameHub', {
                     skipNegotiation: true,
                     transport: HttpTransportType.WebSockets
                 })
