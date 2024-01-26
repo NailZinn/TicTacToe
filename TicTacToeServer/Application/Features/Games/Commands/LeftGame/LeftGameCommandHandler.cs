@@ -19,7 +19,6 @@ public class LeftGameCommandHandler : ICommandHandler<LeftGameCommand>
             .Include(x => x.Player1)
             .Include(x => x.Player2)
             .Include(x => x.Others)
-            .ThenInclude(x => x.AsWatcher)
             .FirstOrDefaultAsync(x =>
                 (x.Player1 != null && x.Player1.Id == request.UserId) ||
                 (x.Player2 != null && x.Player2.Id == request.UserId) ||
@@ -38,6 +37,8 @@ public class LeftGameCommandHandler : ICommandHandler<LeftGameCommand>
         {
             var user = game.Others.First(x => x.Id == request.UserId);
             game.Others.Remove(user);
+            user = await _dbContext.Set<User>().Include(x => x.AsWatcher)
+                .FirstAsync(x => x.Id == user.Id, cancellationToken);
             user.AsWatcher = null;
             _dbContext.Set<User>().Update(user);
         }
