@@ -3,9 +3,12 @@ using DataAccess;
 using Shared.Options;
 using TicTacToeServer;
 using TicTacToeServer.Extensions;
+using TicTacToeServer.Hubs;
 using TicTacToeServer.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalR();
 
 builder.Services
     .AddCors()
@@ -51,5 +54,7 @@ app.UseAuthorization();
 
 app.MapGet("/", () => "Hello, world!");
 app.MapControllers();
+
+app.MapHub<GameHub>("/gameHub");
 
 app.Run();

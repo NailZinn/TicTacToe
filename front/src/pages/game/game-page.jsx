@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react'
 import { Modal, Button } from 'antd'
-import { HttpTransportType, HubConnectionBuilder } from '@microsoft/signalr'
+import { useLocation } from 'react-router-dom'
+import { HttpTransportType, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr'
 
 import './game-page.css'
 
 const Game = () => {
 
-    const [squares, setSquares] = useState(Array(9).fill(''))
-    const [isFinished, setIsFinished] = useState(false);
+    const [board, setBoard] = useState(Array(9).fill(''))
+    const [isFinished, setIsFinished] = useState(false)
     const [connection, setConnection] = useState(null)
+    const [playerSymbol, setPlayerSymbol] = useState(null)
+    const [playerTurn, setPlayerTurn] = useState(false)
+    const [isWatcher, setIsWatcher] = useState(false)
+
+    const gameId = useLocation().pathname.split('/')[2] 
 
     useEffect(() => {
         if (!connection) {
@@ -24,16 +30,46 @@ const Game = () => {
     }, [])
 
     useEffect(() => {
-        if (connection) {
+        if (!connection) return
+
+        if (connection.state === HubConnectionState.Disconnected) {
             connection.start()
+                .then(() => {
+                    connection.invoke('JoinGameAsync', gameId)
+                })
+                .catch((e) => {
+                    console.log(e)
+                })
         }
-    }, [connection])
+        connection.off('ReceiveStartMessageAsync')
+        connection.off('ReceiveWatcherMessageAsync')
+        connection.off('ReceiveGameEventMessage')
+        connection.on('ReceiveStartMessageAsync', (message) => {
+            setPlayerSymbol(message.playerSymbol)
+            setPlayerTurn(message.playerTurn)
+        })
+        connection.on('ReceiveWatcherMessageAsync', () => {
+            setIsWatcher(true)
+        })
+        connection.on('ReceiveGameEventMessage', (message) => {
+            board[message.square] = message.symbol;
+            setBoard([ ...board ])
+            const maybeWinner = calculateWinner()
+            maybeWinner && setIsFinished(true)
+            setPlayerTurn(prev => !prev)
+        })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [connection, playerTurn])
 
     const updateSquare = (square, value) => {
-        squares[square] = value;
-        setSquares([ ...squares ])
-        const maybeWinner = calculateWinner()
-        maybeWinner && setIsFinished(true)
+        if (!playerTurn || isWatcher || !value) {
+            return
+        }
+        connection.invoke('PlaceSymbolAsync', {
+            gameId: gameId,
+            square: square,
+            symbol: value
+        })
     }
 
     const calculateWinner = () => {
@@ -41,8 +77,8 @@ const Game = () => {
 
         for (let i = 0; i < lines.length; i++) {
             const [a, b, c] = lines[i]
-            if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-                return squares[a]
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                return board[a]
             }
         }
 
@@ -51,53 +87,53 @@ const Game = () => {
 
     const finishGame = () => {
         setIsFinished(false)
-        setSquares(Array(9).fill(''))
+        setBoard(Array(9).fill(''))
     }
 
     return (
         <div className='game-field'>
             <div className='game-field-row'>
                 <GameCell 
-                    value={ squares[0] } 
-                    color={ squares[0] === 'X' ? 'cadetBlue' : 'crimson' } 
-                    onClick={ () => updateSquare(0, 'X') } />
+                    value={ board[0] } 
+                    color={ board[0] === 'X' ? 'cadetBlue' : 'crimson' } 
+                    onClick={ () => updateSquare(0, playerSymbol) } />
                 <GameCell 
-                    value={ squares[1] } 
-                    color={ squares[1] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(1, 'X') } />
+                    value={ board[1] } 
+                    color={ board[1] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(1, playerSymbol) } />
                 <GameCell 
-                    value={ squares[2] } 
-                    color={ squares[2] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(2, 'X') } />
+                    value={ board[2] } 
+                    color={ board[2] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(2, playerSymbol) } />
 
             </div>
             <div className='game-field-row'>
                 <GameCell 
-                    value={ squares[3] } 
-                    color={ squares[3] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(3, 'O') } />
+                    value={ board[3] } 
+                    color={ board[3] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(3, playerSymbol) } />
                 <GameCell 
-                    value={ squares[4] } 
-                    color={ squares[4] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(4, 'O') } />
+                    value={ board[4] } 
+                    color={ board[4] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(4, playerSymbol) } />
                 <GameCell 
-                    value={ squares[5] } 
-                    color={ squares[5] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(5, 'X') } />
+                    value={ board[5] } 
+                    color={ board[5] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(5, playerSymbol) } />
             </div>
             <div className='game-field-row'>
                 <GameCell 
-                    value={ squares[6] } 
-                    color={ squares[6] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(6, 'X') } />
+                    value={ board[6] } 
+                    color={ board[6] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(6, playerSymbol) } />
                 <GameCell 
-                    value={ squares[7] } 
-                    color={ squares[7] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(7, 'O') } />
+                    value={ board[7] } 
+                    color={ board[7] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(7, playerSymbol) } />
                 <GameCell 
-                    value={ squares[8] } 
-                    color={ squares[8] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(8, 'X') } />
+                    value={ board[8] } 
+                    color={ board[8] === 'X' ? 'cadetBlue' : 'crimson' }
+                    onClick={ () => updateSquare(8, playerSymbol) } />
             </div>
             <Modal
                 open={ isFinished }
