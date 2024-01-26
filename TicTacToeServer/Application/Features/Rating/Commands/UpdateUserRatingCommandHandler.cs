@@ -21,21 +21,16 @@ internal class UpdateUserRatingCommandHandler : ICommandHandler<UpdateUserRating
     
     public async Task<UserRatingResponse?> Handle(UpdateUserRatingCommand request, CancellationToken cancellationToken)
     {
-        var getUserId = new GetUserIdQuery();
-        var userId = await _mediator.Send(getUserId, cancellationToken);
-        if (userId == Guid.Empty)
-            return null;
-        
         var ratingDelta = (long)request.Reason;
         var update = Builders<UserRating>.Update
-            .SetOnInsert(x => x.Id, userId)
+            .SetOnInsert(x => x.Id, request.UserId)
             .Inc(x => x.Rating, ratingDelta);
         var options = new FindOneAndUpdateOptions<UserRating>
         {
             ReturnDocument = ReturnDocument.After,
             IsUpsert = true
         };
-        var userRating = await _ratings.FindOneAndUpdateAsync<UserRating>(entity => entity.Id == userId, update, options, cancellationToken);
+        var userRating = await _ratings.FindOneAndUpdateAsync<UserRating>(entity => entity.Id == request.UserId, update, options, cancellationToken);
         return new UserRatingResponse(userRating.Id, userRating.Rating);
     }
 }

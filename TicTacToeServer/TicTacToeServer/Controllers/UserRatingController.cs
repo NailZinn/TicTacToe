@@ -1,4 +1,5 @@
-﻿using Application.Features.Rating.Commands;
+﻿using Application.Features.Auth.Queries.GetUserId;
+using Application.Features.Rating.Commands;
 using Application.Features.Rating.Queries.GetUserRating;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,12 @@ public class UserRatingController : ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateRatingAsync([FromQuery] RatingUpdateReason reason)
     {
-        var updateRatingCommand = new UpdateUserRatingCommand(reason);
+        var getUserId = new GetUserIdQuery();
+        var userId = await _mediator.Send(getUserId);
+        if (userId == Guid.Empty)
+            return Ok(null);
+        
+        var updateRatingCommand = new UpdateUserRatingCommand(userId, reason);
         var res = await _mediator.Send(updateRatingCommand);
         return Ok(res);
     }

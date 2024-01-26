@@ -36,6 +36,7 @@ services:
       - JwtSettings__Issuer=TicTacToeServer
       - JwtSettings__Audience=TicTacToeServer
       - JwtSettings__Key=somEverYsecuReandsecRetkeYforjWt
+      - ASPNETCORE_URLS=http://+:80
     build:
       context: ./TicTacToeServer
       dockerfile: Dockerfile

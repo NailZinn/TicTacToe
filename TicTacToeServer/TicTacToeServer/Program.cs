@@ -1,9 +1,12 @@
 using Application;
+using Application.Features.Rating.Commands;
 using DataAccess;
+using MassTransit;
 using Shared.Options;
 using TicTacToeServer;
 using TicTacToeServer.Extensions;
 using TicTacToeServer.Hubs;
+using TicTacToeServer.MessagingContracts;
 using TicTacToeServer.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,6 +56,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => "Hello, world!");
+app.MapPost("/test", async (IBus bus, Guid userId, RatingUpdateReason reason) =>
+{
+	await bus.Publish(new UpdateRatingMessage(userId, reason));
+});
 app.MapControllers();
 
 app.MapHub<GameHub>("/gameHub");
