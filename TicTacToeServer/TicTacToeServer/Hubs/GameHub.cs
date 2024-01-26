@@ -20,6 +20,7 @@ public class GameHub : Hub<IGameHubClient>
 {
     private static readonly ConcurrentDictionary<string, List<string>> UserConnections = [];
     private static readonly ConcurrentDictionary<string, HashSet<string>> Games = [];
+    private static readonly ConcurrentDictionary<string, List<string>> GameMessages = [];
 
     private readonly IMediator _mediator;
 
@@ -53,8 +54,8 @@ public class GameHub : Hub<IGameHubClient>
 
             var currentPlayerSymbolIndex = random.Next(2);
             var currentPlayerTurn = random.Next(2) == 0;
-            var messageForSender = new StartGameMessage(symbols[currentPlayerSymbolIndex], currentPlayerTurn);
-            var messageForReceiver = new StartGameMessage(symbols[1 - currentPlayerSymbolIndex], !currentPlayerTurn);
+            var messageForSender = new StartGameMessage(symbols[currentPlayerSymbolIndex], currentPlayerTurn, GameMessages[gameId]);
+            var messageForReceiver = new StartGameMessage(symbols[1 - currentPlayerSymbolIndex], !currentPlayerTurn, GameMessages[gameId]);
             
             var setGameStatus = new SetGameStateCommand(int.Parse(gameId), GameStatus.Started);
             await _mediator.Send(setGameStatus);
@@ -67,7 +68,7 @@ public class GameHub : Hub<IGameHubClient>
         {
             var getGameField = new GetGameFieldQuery(int.Parse(gameId));
             var gameField = await _mediator.Send(getGameField);
-            await Clients.Clients(UserConnections[GetUserId()]).ReceiveWatcherMessageAsync(gameField!);
+            await Clients.Clients(UserConnections[GetUserId()]).ReceiveWatcherMessageAsync(gameField!, GameMessages[gameId]);
         }
         else
         {
@@ -82,6 +83,7 @@ public class GameHub : Hub<IGameHubClient>
         await Clients.Clients(Games[message.GameId].SelectMany(userId => UserConnections[userId]))
             .ReceiveGameEventMessage(message);
     }
+
     public Task LeaveGameAsync(string gameId)
     {
         Games[gameId].Remove(GetUserId());
@@ -92,6 +94,21 @@ public class GameHub : Hub<IGameHubClient>
     {
         var resetGameFieldCommand = new ResetGameFieldCommand(int.Parse(gameId));
         await _mediator.Send(resetGameFieldCommand);
+    }
+
+    public async Task SendMessageAsync(GameChatMessage gameChatMessage)
+    {
+        await Clients.Clients(Games[gameChatMessage.GameId].SelectMany(userId => UserConnections[userId]))
+            .ReceiveGameChatMessageAsync(gameChatMessage.Message);
+
+        GameMessages.AddOrUpdate(
+            key: gameChatMessage.GameId,
+            addValue: [gameChatMessage.Message],
+            updateValueFactory: (_, value) =>
+            {
+                value.Add(gameChatMessage.Message);
+                return value;
+            });
     }
 
     public override Task OnConnectedAsync()
