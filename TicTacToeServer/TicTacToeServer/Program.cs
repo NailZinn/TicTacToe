@@ -1,12 +1,10 @@
 using Application;
-using Application.Features.Rating.Commands.UpdateUserRating;
 using DataAccess;
-using MassTransit;
 using Shared.Options;
 using TicTacToeServer;
+using TicTacToeServer.BackgroundService;
 using TicTacToeServer.Extensions;
 using TicTacToeServer.Hubs;
-using TicTacToeServer.MessagingContracts;
 using TicTacToeServer.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +22,7 @@ builder.Services
     .AddScoped<MoveAuthCookieToHeaderMiddleware>()
     .AddJwtAuth(builder.Configuration.GetSection(JwtSettings.SectionName))
     .AddHttpContextAccessor()
+    .AddHostedService<CleanEmptyGamesWorker>()
     .AddControllers();
 
 var app = builder.Build();
@@ -40,9 +39,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseMiddleware<MoveAuthCookieToHeaderMiddleware>();
 
-app.UseCors(builder =>
+app.UseCors(corsBuilder =>
 {
-    builder
+    corsBuilder
 		.AllowCredentials()
 		.AllowAnyHeader()
 		.AllowAnyMethod()

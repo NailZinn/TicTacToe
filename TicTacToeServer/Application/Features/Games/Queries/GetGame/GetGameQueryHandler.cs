@@ -25,7 +25,7 @@ internal class GetGameQueryHandler : IQueryHandler<GetGameQuery, GameResponse?>
             return null;
 
         return new GameResponse(game.Id,
-            new UserBrief(game.Player1.Id, game.Player1.UserName!),
+            new UserBrief(game.Player1!.Id, game.Player1.UserName!),
             game.Player2 is null ? null : new UserBrief(game.Player2.Id, game.Player2.UserName!),
             game.Others.Select(x => new UserBrief(x.Id, x.UserName!)),
             game.Status, game.MaxRating);
