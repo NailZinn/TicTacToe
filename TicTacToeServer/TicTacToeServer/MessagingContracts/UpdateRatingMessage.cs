@@ -1,4 +1,4 @@
-﻿using Application.Features.Rating.Commands;
+﻿using Application.Features.Rating.Commands.UpdateUserRating;
 
 namespace TicTacToeServer.MessagingContracts;
 

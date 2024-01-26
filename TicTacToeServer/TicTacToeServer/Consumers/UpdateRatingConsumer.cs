@@ -1,4 +1,4 @@
-﻿using Application.Features.Rating.Commands;
+﻿using Application.Features.Rating.Commands.UpdateUserRating;
 using MassTransit;
 using MediatR;
 using TicTacToeServer.MessagingContracts;

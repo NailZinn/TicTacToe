@@ -1,5 +1,5 @@
 ﻿using Application.Features.Auth.Queries.GetUserId;
-using Application.Features.Rating.Commands;
+using Application.Features.Rating.Commands.UpdateUserRating;
 using Application.Features.Rating.Queries.GetUserRating;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +22,12 @@ public class UserRatingController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetByUserIdAsync()
     {
-        var getUserRatingQuery = new GetUserRatingQuery();
+        var getUserId = new GetUserIdQuery();
+        var userId = await _mediator.Send(getUserId);
+        if (userId == Guid.Empty)
+            return Ok(null);
+        
+        var getUserRatingQuery = new GetUserRatingQuery(userId);
         var res = await _mediator.Send(getUserRatingQuery);
         return Ok(res);
     }

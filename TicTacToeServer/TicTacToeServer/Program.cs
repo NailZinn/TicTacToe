@@ -1,5 +1,5 @@
 using Application;
-using Application.Features.Rating.Commands;
+using Application.Features.Rating.Commands.UpdateUserRating;
 using DataAccess;
 using MassTransit;
 using Shared.Options;
@@ -27,6 +27,8 @@ builder.Services
     .AddControllers();
 
 var app = builder.Build();
+
+await app.MigrateAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

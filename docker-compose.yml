@@ -29,6 +29,7 @@ services:
     container_name: TicTacToeServer
     ports:
       - "7289:80"
+    restart: always
     environment:
       - ConnectionStrings__Postgres=User ID=root;Password=myPassword;Host=postgres;Port=5432;Database=myDB;Pooling=true;Connection Lifetime=0;
       - ConnectionStrings__RabbitMq=amqp://admin:admin@rabbitmq:5672
