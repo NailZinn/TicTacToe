@@ -58,10 +58,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => "Hello, world!");
-app.MapPost("/test", async (IBus bus, Guid userId, RatingUpdateReason reason) =>
-{
-	await bus.Publish(new UpdateRatingMessage(userId, reason));
-});
 app.MapControllers();
 
 app.MapHub<GameHub>("/gameHub");

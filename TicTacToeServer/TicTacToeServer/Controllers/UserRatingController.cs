@@ -1,9 +1,11 @@
 ﻿using Application.Features.Auth.Queries.GetUserId;
 using Application.Features.Rating.Commands.UpdateUserRating;
 using Application.Features.Rating.Queries.GetUserRating;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TicTacToeServer.MessagingContracts;
 
 namespace TicTacToeServer.Controllers;
 
@@ -13,10 +15,12 @@ namespace TicTacToeServer.Controllers;
 public class UserRatingController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IBus _bus;
 
-    public UserRatingController(IMediator mediator)
+    public UserRatingController(IMediator mediator, IBus bus)
     {
         _mediator = mediator;
+        _bus = bus;
     }
 
     [HttpGet]
@@ -40,8 +44,9 @@ public class UserRatingController : ControllerBase
         if (userId == Guid.Empty)
             return Ok(null);
         
-        var updateRatingCommand = new UpdateUserRatingCommand(userId, reason);
-        var res = await _mediator.Send(updateRatingCommand);
-        return Ok(res);
+        var message = new UpdateRatingMessage(userId, reason);
+        await _bus.Publish(message);
+
+        return Ok();
     }
 }

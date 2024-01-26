@@ -10,5 +10,5 @@ public interface IGameHubClient
 
     Task ReceiveGameEventMessage(GameEventMessage message);
 
-    Task ReceiveOpponentLefGameMessage();
+    Task ReceiveOpponentLeftGameMessage();
 }

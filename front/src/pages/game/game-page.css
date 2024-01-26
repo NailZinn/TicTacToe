@@ -21,6 +21,16 @@
     cursor: pointer;
 }
 
+.game-turn-message {
+    width: 300px;
+    margin-top: 48px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+}
+
 .game-field-row:first-child > .game-cell:first-child {
     border-top: none;
     border-left: none;

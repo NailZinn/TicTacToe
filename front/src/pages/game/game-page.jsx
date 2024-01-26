@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Modal, Button } from 'antd'
-import {useLocation, useNavigate} from 'react-router-dom'
+import { Modal } from 'antd'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { HttpTransportType, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr'
+import { axiosInstance as axios } from '../../axios'
 
 import './game-page.css'
 import {axiosInstance} from "../../axios";
@@ -11,12 +12,12 @@ const Game = () => {
     const navigate = useNavigate()
     
     const [board, setBoard] = useState(Array(9).fill(''))
-    const [isFinished, setIsFinished] = useState(false)
     const [connection, setConnection] = useState(null)
     const [playerSymbol, setPlayerSymbol] = useState(null)
     const [playerTurn, setPlayerTurn] = useState(false)
     const [isWatcher, setIsWatcher] = useState(false)
-    const [gameStarted, setGameStarted] = useState(false)
+
+    const [modal, modalHolder] = Modal.useModal()
 
     const gameId = useLocation().pathname.split('/')[2] 
 
@@ -59,23 +60,22 @@ const Game = () => {
         connection.off('ReceiveStartMessageAsync')
         connection.off('ReceiveWatcherMessageAsync')
         connection.off('ReceiveGameEventMessage')
-        connection.off('ReceiveOpponentLefGameMessage')
+        connection.off('ReceiveOpponentLeftGameMessage')
         connection.on('ReceiveStartMessageAsync', (message) => {
             setPlayerSymbol(message.playerSymbol)
             setPlayerTurn(message.playerTurn)
-            setGameStarted(true)
         })
         connection.on('ReceiveWatcherMessageAsync', () => {
             setIsWatcher(true)
         })
         connection.on('ReceiveGameEventMessage', (message) => {
-            board[message.square] = message.symbol;
+            board[message.square] = message.symbol
             setBoard([ ...board ])
-            const maybeWinner = calculateWinner()
-            maybeWinner && setIsFinished(true)
+            const maybeWinner = calculateWinner();
+            (maybeWinner || board.every(x => x !== '')) && handleGameEnding(maybeWinner)
             setPlayerTurn(prev => !prev)
         })
-        connection.on('ReceiveOpponentLefGameMessage', () => {
+        connection.on('ReceiveOpponentLeftGameMessage', () => {
             if (isWatcher)
                 console.log('Игра окончена выйди отсюда')
             else
@@ -85,7 +85,6 @@ const Game = () => {
     }, [connection, playerTurn])
 
     const updateSquare = (square, value) => {
-        console.log(playerTurn, isWatcher, value)
         if (!playerTurn || isWatcher || !value) {
             return
         }
@@ -109,14 +108,47 @@ const Game = () => {
         return null;
     }
 
-    const finishGame = () => {
-        setIsFinished(false)
-        setBoard(Array(9).fill(''))
+    const handleGameEnding = (winner) => {
+        let modalMessage = ''
+        let reason = 0
+        if (!isWatcher) {
+            if (winner) {
+                modalMessage = winner === playerSymbol ? 'You win' : 'You lose'
+                reason = winner === playerSymbol ? 3 : -1
+            } else {
+                modalMessage = 'Draw'
+            }
+        }
+        const instance = modal.success({
+            title: 'Game finished',
+            content: modalMessage,
+            okText: 'Leave game',
+            onOk: () => { 
+                connection.invoke('LeaveGameAsync')
+                    .then(_ => {
+                        connection.stop()
+                        navigate('/')
+                    })
+                    .catch(_ => {
+                        connection.stop()
+                        navigate('/')    
+                    })
+            }
+        })
+        setTimeout(() => {
+            instance.destroy()
+            setBoard(Array(9).fill(''))
+            if (!isWatcher) {
+                setPlayerSymbol(playerSymbol === 'X' ? 'O' : 'X')
+                setPlayerTurn(prev => !prev)
+            }
+        }, 5000)
+        axios.put(`/rating?reason=${reason}`)
+            .catch(_ => console.log('something went wrong'))
     }
 
     return (
         <>
-            <GameInfo gameStarted={gameStarted} isWatcher={isWatcher} playerTurn={playerTurn}/>
             <div className='game-field'>
                 <div className='game-field-row'>
                     <GameCell 
@@ -131,7 +163,6 @@ const Game = () => {
                         value={ board[2] } 
                         color={ board[2] === 'X' ? 'cadetBlue' : 'crimson' }
                         onClick={ () => updateSquare(2, playerSymbol) } />
-    
                 </div>
                 <div className='game-field-row'>
                     <GameCell 
@@ -161,16 +192,18 @@ const Game = () => {
                         color={ board[8] === 'X' ? 'cadetBlue' : 'crimson' }
                         onClick={ () => updateSquare(8, playerSymbol) } />
                 </div>
-                <Modal
-                    open={ isFinished }
-                    closeIcon={ null }
-                    footer={ null }>
-                    <div>
-                        <div>You win</div>
-                        <Button type='primary' onClick={ finishGame }>Close</Button>
-                    </div>
-                </Modal>
+                { modalHolder }
             </div>
+            {
+                playerSymbol &&
+                    <div 
+                        style={{ color: playerTurn 
+                            ? playerSymbol === 'X' ? 'cadetblue' : 'crimson'
+                            : playerSymbol !== 'X' ? 'cadetblue' : 'crimson' }}
+                        className='game-turn-message'>
+                        { playerTurn ? 'Your turn' : 'Opponent\'s turn' }
+                    </div>
+            }
         </>
     )
 }
@@ -180,15 +213,6 @@ const GameCell = ({ value, color, onClick }) => {
     return (
         <div style={{ color: color }} className='game-cell' onClick={ onClick }>
             { value }
-        </div>
-    )
-}
-
-const GameInfo = ({ gameStarted, isWatcher, playerTurn }) => {
-    return (
-        <div>
-            { isWatcher && <span>Вы зритель</span> }
-            { gameStarted && !isWatcher && <span>{ playerTurn ? 'Ваш ход' : 'Ход противника' }</span>}
         </div>
     )
 }

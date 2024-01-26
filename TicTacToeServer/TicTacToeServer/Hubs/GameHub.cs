@@ -75,6 +75,12 @@ public class GameHub : Hub<IGameHubClient>
         await Clients.Clients(Games[message.GameId].SelectMany(userId => UserConnections[userId]))
             .ReceiveGameEventMessage(message);
     }
+    public Task LeaveGameAsync(string gameId)
+    {
+        Games[gameId].Remove(GetUserId());
+
+        return Task.CompletedTask;
+    }
 
     public override Task OnConnectedAsync()
     {
@@ -98,7 +104,7 @@ public class GameHub : Hub<IGameHubClient>
         if (gameId is not null)
         {
             await Clients.Clients(Games[gameId.Value.ToString()].SelectMany(userId => UserConnections[userId]))
-                .ReceiveOpponentLefGameMessage();
+                .ReceiveOpponentLeftGameMessage();
             var leftGameCommand = new LeftGameCommand(uId);
             await _mediator.Send(leftGameCommand);
         }
