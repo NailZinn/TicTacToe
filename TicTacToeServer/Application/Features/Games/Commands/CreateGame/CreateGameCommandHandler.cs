@@ -38,7 +38,15 @@ internal class CreateGameCommandHandler : ICommandHandler<CreateGameCommand, Gam
             .Include(x => x.AsPlayer)
             .Include(x => x.AsWatcher)
             .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
-
+        if (user!.AsWatcher is not null)
+        {
+            var watchingGame = await _dbContext.Set<Game>()
+                .Include(x => x.Others)
+                .FirstOrDefaultAsync(x => x.Others.Contains(user), cancellationToken);
+            if (watchingGame?.Player1 is null)
+                user.AsWatcher = null;
+            _dbContext.Set<User>().Update(user);
+        }
         if (user!.HasJoinedGame)
             return null;
         
