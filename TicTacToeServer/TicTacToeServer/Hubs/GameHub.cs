@@ -9,6 +9,7 @@ using Application.Features.Games.Queries.GetUserActiveGame;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
 using TicTacToeServer.Dto;
@@ -23,10 +24,12 @@ public class GameHub : Hub<IGameHubClient>
     private static readonly ConcurrentDictionary<string, List<string>> GameMessages = [];
 
     private readonly IMediator _mediator;
+    private readonly UserManager<User> _userManager;
 
-    public GameHub(IMediator mediator)
+    public GameHub(IMediator mediator, UserManager<User> userManager)
     {
         _mediator = mediator;
+        _userManager = userManager;
     }
 
     public async Task JoinGameAsync(string gameId)
@@ -98,15 +101,18 @@ public class GameHub : Hub<IGameHubClient>
 
     public async Task SendMessageAsync(GameChatMessage gameChatMessage)
     {
+        var user = await _userManager.FindByIdAsync(GetUserId());
+        var resultMessage = $"{user!.UserName}: {gameChatMessage.Message}";
+        
         await Clients.Clients(Games[gameChatMessage.GameId].SelectMany(userId => UserConnections[userId]))
-            .ReceiveGameChatMessageAsync(gameChatMessage.Message);
+            .ReceiveGameChatMessageAsync(resultMessage);
 
         GameMessages.AddOrUpdate(
             key: gameChatMessage.GameId,
-            addValue: [gameChatMessage.Message],
+            addValue: [resultMessage],
             updateValueFactory: (_, value) =>
             {
-                value.Add(gameChatMessage.Message);
+                value.Add(resultMessage);
                 return value;
             });
     }
@@ -138,6 +144,8 @@ public class GameHub : Hub<IGameHubClient>
                     .ReceiveOpponentLeftGameMessage();
             }
             Games[gameId.joinedGame.Value.ToString()].Remove(GetUserId());
+            if (Games[gameId.joinedGame.Value.ToString()].Count == 0)
+                GameMessages.Remove(gameId.joinedGame.ToString(), out _);
             var leftGameCommand = new LeftGameCommand(uId);
             await _mediator.Send(leftGameCommand);
         }
