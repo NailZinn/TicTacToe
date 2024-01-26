@@ -29,6 +29,9 @@ internal class JoinGameCommandHandler : ICommandHandler<JoinGameCommand, bool>
             return false;
 
         var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user!.HasActiveGame)
+            return false;
+        
         var game = await _dbContext.Set<Game>()
             .Include(x => x.Player2)
             .Include(x => x.Others)
@@ -44,7 +47,7 @@ internal class JoinGameCommandHandler : ICommandHandler<JoinGameCommand, bool>
         if (game.Player2 is null)
             game.Player2 = user;
         else
-            game.Others.Add(user!);
+            game.Others.Add(user);
 
         _dbContext.Set<Game>().Update(game);
         await _dbContext.SaveChangesAsync(cancellationToken);

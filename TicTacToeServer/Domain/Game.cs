@@ -4,6 +4,7 @@ public class Game
 {
     public int Id { get; set; }
     
+    public Guid Player1Id { get; set; }
     public User Player1 { get; set; }
     public User? Player2 { get; set; }
     public List<User> Others { get; set; }

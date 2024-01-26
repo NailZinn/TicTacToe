@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Modal, Button } from 'antd'
-import { useLocation } from 'react-router-dom'
+import {useLocation, useNavigate} from 'react-router-dom'
 import { HttpTransportType, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr'
 
 import './game-page.css'
+import {axiosInstance} from "../../axios";
 
 const Game = () => {
 
+    const navigate = useNavigate()
+    
     const [board, setBoard] = useState(Array(9).fill(''))
     const [isFinished, setIsFinished] = useState(false)
     const [connection, setConnection] = useState(null)
@@ -18,13 +21,24 @@ const Game = () => {
 
     useEffect(() => {
         if (!connection) {
-            const newConnection = new HubConnectionBuilder()
-                .withUrl('http://localhost:7051/gameHub', {
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets
+            axiosInstance.get(`/games/${gameId}`)
+                .then(resp => resp.data)
+                .then(data => {
+                    if (!data)
+                        navigate('/')
                 })
-                .build()
-            setConnection(newConnection)
+                .then(_ => {
+                    const newConnection = new HubConnectionBuilder()
+                        .withUrl('http://localhost:7051/gameHub', {
+                            skipNegotiation: true,
+                            transport: HttpTransportType.WebSockets
+                        })
+                        .build()
+                    setConnection(newConnection)
+                })
+                .catch(e => {
+                    navigate('/authorization')
+                })
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -95,60 +109,63 @@ const Game = () => {
     }
 
     return (
-        <div className='game-field'>
-            <div className='game-field-row'>
-                <GameCell 
-                    value={ board[0] } 
-                    color={ board[0] === 'X' ? 'cadetBlue' : 'crimson' } 
-                    onClick={ () => updateSquare(0, playerSymbol) } />
-                <GameCell 
-                    value={ board[1] } 
-                    color={ board[1] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(1, playerSymbol) } />
-                <GameCell 
-                    value={ board[2] } 
-                    color={ board[2] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(2, playerSymbol) } />
-
-            </div>
-            <div className='game-field-row'>
-                <GameCell 
-                    value={ board[3] } 
-                    color={ board[3] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(3, playerSymbol) } />
-                <GameCell 
-                    value={ board[4] } 
-                    color={ board[4] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(4, playerSymbol) } />
-                <GameCell 
-                    value={ board[5] } 
-                    color={ board[5] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(5, playerSymbol) } />
-            </div>
-            <div className='game-field-row'>
-                <GameCell 
-                    value={ board[6] } 
-                    color={ board[6] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(6, playerSymbol) } />
-                <GameCell 
-                    value={ board[7] } 
-                    color={ board[7] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(7, playerSymbol) } />
-                <GameCell 
-                    value={ board[8] } 
-                    color={ board[8] === 'X' ? 'cadetBlue' : 'crimson' }
-                    onClick={ () => updateSquare(8, playerSymbol) } />
-            </div>
-            <Modal
-                open={ isFinished }
-                closeIcon={ null }
-                footer={ null }>
-                <div>
-                    <div>You win</div>
-                    <Button type='primary' onClick={ finishGame }>Close</Button>
+        <>
+            <GameInfo isWatcher={isWatcher} playerTurn={playerTurn}/>
+            <div className='game-field'>
+                <div className='game-field-row'>
+                    <GameCell 
+                        value={ board[0] } 
+                        color={ board[0] === 'X' ? 'cadetBlue' : 'crimson' } 
+                        onClick={ () => updateSquare(0, playerSymbol) } />
+                    <GameCell 
+                        value={ board[1] } 
+                        color={ board[1] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(1, playerSymbol) } />
+                    <GameCell 
+                        value={ board[2] } 
+                        color={ board[2] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(2, playerSymbol) } />
+    
                 </div>
-            </Modal>
-        </div>
+                <div className='game-field-row'>
+                    <GameCell 
+                        value={ board[3] } 
+                        color={ board[3] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(3, playerSymbol) } />
+                    <GameCell 
+                        value={ board[4] } 
+                        color={ board[4] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(4, playerSymbol) } />
+                    <GameCell 
+                        value={ board[5] } 
+                        color={ board[5] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(5, playerSymbol) } />
+                </div>
+                <div className='game-field-row'>
+                    <GameCell 
+                        value={ board[6] } 
+                        color={ board[6] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(6, playerSymbol) } />
+                    <GameCell 
+                        value={ board[7] } 
+                        color={ board[7] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(7, playerSymbol) } />
+                    <GameCell 
+                        value={ board[8] } 
+                        color={ board[8] === 'X' ? 'cadetBlue' : 'crimson' }
+                        onClick={ () => updateSquare(8, playerSymbol) } />
+                </div>
+                <Modal
+                    open={ isFinished }
+                    closeIcon={ null }
+                    footer={ null }>
+                    <div>
+                        <div>You win</div>
+                        <Button type='primary' onClick={ finishGame }>Close</Button>
+                    </div>
+                </Modal>
+            </div>
+        </>
     )
 }
 
@@ -157,6 +174,15 @@ const GameCell = ({ value, color, onClick }) => {
     return (
         <div style={{ color: color }} className='game-cell' onClick={ onClick }>
             { value }
+        </div>
+    )
+}
+
+const GameInfo = ({ isWatcher, playerTurn }) => {
+    return (
+        <div>
+            { isWatcher && <span>Вы зритель</span> }
+            { !isWatcher && <span>{ playerTurn ? 'Ваш ход' : 'Ход противника' }</span>}
         </div>
     )
 }

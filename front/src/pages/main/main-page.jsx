@@ -62,7 +62,10 @@ const MainPage = () => {
         axiosInstance.post(`/games`, values)
             .then(response => response.data)
             .then(data => {
-                navigate(`/game/${data.id}`)
+                if (data)
+                    navigate(`/game/${data.id}`)
+                else
+                    showLabelFunc('Ваш рейтинг выше выбранного максимального')
             })
             .catch(e => {
                 navigate('/')

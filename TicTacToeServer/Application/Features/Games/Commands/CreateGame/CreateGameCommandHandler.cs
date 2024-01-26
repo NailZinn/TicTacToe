@@ -1,10 +1,12 @@
 ﻿using Application.Features.Auth.Queries.GetUserId;
 using Application.Features.Games.Shared;
+using Application.Features.Rating.Queries.GetUserRating;
 using CQRS.Abstractions;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 
 namespace Application.Features.Games.Commands.CreateGame;
 
@@ -28,7 +30,15 @@ internal class CreateGameCommandHandler : ICommandHandler<CreateGameCommand, Gam
         if (userId == Guid.Empty)
             return null;
 
+        var getUserRating = new GetUserRatingQuery(userId);
+        var rating = await _mediator.Send(getUserRating, cancellationToken);
+        if (rating!.Rating > request.MaxRating)
+            return null;
+        
         var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user!.HasActiveGame)
+            return null;
         
         var game = new Game
         {

@@ -1,5 +1,8 @@
 using System.Collections.Concurrent;
 using System.Security.Claims;
+using Application.Features.Games.Commands.SetGameState;
+using Domain;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
@@ -12,6 +15,13 @@ public class GameHub : Hub<IGameHubClient>
 {
     private static readonly ConcurrentDictionary<string, List<string>> UserConnections = [];
     private static readonly ConcurrentDictionary<string, HashSet<string>> Games = [];
+
+    private readonly IMediator _mediator;
+
+    public GameHub(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
 
     public async Task JoinGameAsync(string gameId)
     {
@@ -40,7 +50,10 @@ public class GameHub : Hub<IGameHubClient>
             var currentPlayerTurn = random.Next(2) == 0;
             var messageForSender = new StartGameMessage(symbols[currentPlayerSymbolIndex], currentPlayerTurn);
             var messageForReceiver = new StartGameMessage(symbols[1 - currentPlayerSymbolIndex], !currentPlayerTurn);
-
+            
+            var setGameStatus = new SetGameStateCommand(int.Parse(gameId), GameStatus.Started);
+            await _mediator.Send(setGameStatus);
+            
             await Clients.Clients(UserConnections[GetUserId()]).ReceiveStartMessageAsync(messageForSender);
             await Clients.Clients(UserConnections[Games[gameId].First(x => x != GetUserId())])
                 .ReceiveStartMessageAsync(messageForReceiver);
