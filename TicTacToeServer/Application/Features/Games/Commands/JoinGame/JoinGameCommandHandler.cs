@@ -11,13 +11,11 @@ namespace Application.Features.Games.Commands.JoinGame;
 internal class JoinGameCommandHandler : ICommandHandler<JoinGameCommand, bool>
 {
     private readonly IMediator _mediator;
-    private readonly UserManager<User> _userManager;
     private readonly DbContext _dbContext;
 
-    public JoinGameCommandHandler(IMediator mediator, UserManager<User> userManager, DbContext dbContext)
+    public JoinGameCommandHandler(IMediator mediator, DbContext dbContext)
     {
         _mediator = mediator;
-        _userManager = userManager;
         _dbContext = dbContext;
     }
 
@@ -28,8 +26,12 @@ internal class JoinGameCommandHandler : ICommandHandler<JoinGameCommand, bool>
         if (userId == Guid.Empty)
             return false;
 
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user!.HasActiveGame)
+        var user = await _dbContext.Set<User>()
+            .Include(x => x.AsOwner)
+            .Include(x => x.AsPlayer)
+            .Include(x => x.AsWatcher)
+            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+        if (user!.HasJoinedGame)
             return false;
         
         var game = await _dbContext.Set<Game>()

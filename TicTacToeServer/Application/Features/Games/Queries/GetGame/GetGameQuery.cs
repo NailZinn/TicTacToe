@@ -1,5 +1,5 @@
 ﻿using CQRS.Abstractions;
 
-namespace Application.Features.Games.Queries.GetGameQuery;
+namespace Application.Features.Games.Queries.GetGame;
 
 public record GetGameQuery(int GameId) : IQuery<GameResponse?>;

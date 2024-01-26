@@ -9,4 +9,6 @@ public interface IGameHubClient
     Task ReceiveWatcherMessageAsync();
 
     Task ReceiveGameEventMessage(GameEventMessage message);
+
+    Task ReceiveOpponentLefGameMessage();
 }

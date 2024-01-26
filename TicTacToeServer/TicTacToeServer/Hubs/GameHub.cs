@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Claims;
 using Application.Features.Games.Commands.SetGameState;
+using Application.Features.Games.Queries.GetUserActiveGame;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -88,11 +89,14 @@ public class GameHub : Hub<IGameHubClient>
         return Task.CompletedTask;
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        var getUserActiveGameQuery = new GetUserActiveGameQuery(Guid.Parse(GetUserId()));
+        var gameId = await _mediator.Send(getUserActiveGameQuery);
+        if (gameId is not null)
+            await Clients.Clients(Games[gameId.Value.ToString()].SelectMany(userId => UserConnections[userId]))
+                .ReceiveOpponentLefGameMessage();
         UserConnections[GetUserId()].Remove(Context.ConnectionId);
-
-        return Task.CompletedTask;
     }
 
     private string GetUserId()

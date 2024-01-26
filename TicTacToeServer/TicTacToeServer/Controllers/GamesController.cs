@@ -1,7 +1,7 @@
 ﻿using Application.Features.Games.Commands.CreateGame;
 using Application.Features.Games.Commands.JoinGame;
 using Application.Features.Games.Queries.GetAllGames;
-using Application.Features.Games.Queries.GetGameQuery;
+using Application.Features.Games.Queries.GetGame;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

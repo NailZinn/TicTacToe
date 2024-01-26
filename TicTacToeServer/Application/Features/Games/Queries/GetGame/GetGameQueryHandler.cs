@@ -2,7 +2,7 @@
 using Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Features.Games.Queries.GetGameQuery;
+namespace Application.Features.Games.Queries.GetGame;
 
 internal class GetGameQueryHandler : IQueryHandler<GetGameQuery, GameResponse?>
 {

@@ -12,5 +12,6 @@ public class User : IdentityUser<Guid>
     public int? AsWatcherId { get; set; }
     public Game? AsWatcher { get; set; }
 
-    public bool HasActiveGame => AsOwner is not null || AsPlayer is not null || AsWatcher is not null;
+    public Game? ActiveGame => AsOwner ?? AsPlayer;
+    public bool HasJoinedGame => (ActiveGame ?? AsWatcher) is not null;
 }

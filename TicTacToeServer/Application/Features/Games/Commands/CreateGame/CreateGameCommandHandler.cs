@@ -14,13 +14,11 @@ internal class CreateGameCommandHandler : ICommandHandler<CreateGameCommand, Gam
 {
     private readonly DbContext _dbContext;
     private readonly IMediator _mediator;
-    private readonly UserManager<User> _userManager;
 
-    public CreateGameCommandHandler(DbContext dbContext, IMediator mediator, UserManager<User> userManager)
+    public CreateGameCommandHandler(DbContext dbContext, IMediator mediator)
     {
         _dbContext = dbContext;
         _mediator = mediator;
-        _userManager = userManager;
     }
 
     public async Task<GameBriefResponse?> Handle(CreateGameCommand request, CancellationToken cancellationToken)
@@ -35,9 +33,13 @@ internal class CreateGameCommandHandler : ICommandHandler<CreateGameCommand, Gam
         if (rating!.Rating > request.MaxRating)
             return null;
         
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _dbContext.Set<User>()
+            .Include(x => x.AsOwner)
+            .Include(x => x.AsPlayer)
+            .Include(x => x.AsWatcher)
+            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
 
-        if (user!.HasActiveGame)
+        if (user!.HasJoinedGame)
             return null;
         
         var game = new Game

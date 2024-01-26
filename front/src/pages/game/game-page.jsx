@@ -16,6 +16,7 @@ const Game = () => {
     const [playerSymbol, setPlayerSymbol] = useState(null)
     const [playerTurn, setPlayerTurn] = useState(false)
     const [isWatcher, setIsWatcher] = useState(false)
+    const [gameStarted, setGameStarted] = useState(false)
 
     const gameId = useLocation().pathname.split('/')[2] 
 
@@ -58,22 +59,27 @@ const Game = () => {
         connection.off('ReceiveStartMessageAsync')
         connection.off('ReceiveWatcherMessageAsync')
         connection.off('ReceiveGameEventMessage')
+        connection.off('ReceiveOpponentLefGameMessage')
         connection.on('ReceiveStartMessageAsync', (message) => {
-            console.log(message)
             setPlayerSymbol(message.playerSymbol)
             setPlayerTurn(message.playerTurn)
+            setGameStarted(true)
         })
         connection.on('ReceiveWatcherMessageAsync', () => {
-            console.log('you watcher')
             setIsWatcher(true)
         })
         connection.on('ReceiveGameEventMessage', (message) => {
-            console.log(message)
             board[message.square] = message.symbol;
             setBoard([ ...board ])
             const maybeWinner = calculateWinner()
             maybeWinner && setIsFinished(true)
             setPlayerTurn(prev => !prev)
+        })
+        connection.on('ReceiveOpponentLefGameMessage', () => {
+            if (isWatcher)
+                console.log('Игра окончена выйди отсюда')
+            else
+                console.log('Твой оппонент отключился')
         })
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [connection, playerTurn])
@@ -110,7 +116,7 @@ const Game = () => {
 
     return (
         <>
-            <GameInfo isWatcher={isWatcher} playerTurn={playerTurn}/>
+            <GameInfo gameStarted={gameStarted} isWatcher={isWatcher} playerTurn={playerTurn}/>
             <div className='game-field'>
                 <div className='game-field-row'>
                     <GameCell 
@@ -178,11 +184,11 @@ const GameCell = ({ value, color, onClick }) => {
     )
 }
 
-const GameInfo = ({ isWatcher, playerTurn }) => {
+const GameInfo = ({ gameStarted, isWatcher, playerTurn }) => {
     return (
         <div>
             { isWatcher && <span>Вы зритель</span> }
-            { !isWatcher && <span>{ playerTurn ? 'Ваш ход' : 'Ход противника' }</span>}
+            { gameStarted && !isWatcher && <span>{ playerTurn ? 'Ваш ход' : 'Ход противника' }</span>}
         </div>
     )
 }
