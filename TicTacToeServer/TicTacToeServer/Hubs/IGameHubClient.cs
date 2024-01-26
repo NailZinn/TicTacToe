@@ -6,7 +6,7 @@ public interface IGameHubClient
 {
     Task ReceiveStartMessageAsync(StartGameMessage message);
 
-    Task ReceiveWatcherMessageAsync();
+    Task ReceiveWatcherMessageAsync(char[] gameField);
 
     Task ReceiveGameEventMessage(GameEventMessage message);
 

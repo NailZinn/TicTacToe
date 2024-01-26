@@ -1,7 +1,9 @@
 using System.Collections.Concurrent;
 using System.Security.Claims;
+using Application.Features.Games.Commands.ChangeGameField;
 using Application.Features.Games.Commands.LeftGame;
 using Application.Features.Games.Commands.SetGameState;
+using Application.Features.Games.Queries.GetGameField;
 using Application.Features.Games.Queries.GetUserActiveGame;
 using Domain;
 using MediatR;
@@ -62,7 +64,9 @@ public class GameHub : Hub<IGameHubClient>
         }
         else if (Games[gameId].Count > 2)
         {
-            await Clients.Clients(UserConnections[GetUserId()]).ReceiveWatcherMessageAsync();
+            var getGameField = new GetGameFieldQuery(int.Parse(gameId));
+            var gameField = await _mediator.Send(getGameField);
+            await Clients.Clients(UserConnections[GetUserId()]).ReceiveWatcherMessageAsync(gameField!);
         }
         else
         {
@@ -72,6 +76,8 @@ public class GameHub : Hub<IGameHubClient>
 
     public async Task PlaceSymbolAsync(GameEventMessage message)
     {
+        var changeGameFieldCommand = new ChangeGameFieldCommand(int.Parse(message.GameId), message.Square, message.Symbol);
+        await _mediator.Send(changeGameFieldCommand);
         await Clients.Clients(Games[message.GameId].SelectMany(userId => UserConnections[userId]))
             .ReceiveGameEventMessage(message);
     }
@@ -99,12 +105,13 @@ public class GameHub : Hub<IGameHubClient>
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var uId = Guid.Parse(GetUserId());
-        var getUserActiveGameQuery = new GetUserActiveGameQuery(uId);
+        var getUserActiveGameQuery = new GetUserJoinedActiveGameQuery(uId);
         var gameId = await _mediator.Send(getUserActiveGameQuery);
-        if (gameId is not null)
+        if (gameId.joinedGame is not null)
         {
-            await Clients.Clients(Games[gameId.Value.ToString()].SelectMany(userId => UserConnections[userId]))
-                .ReceiveOpponentLeftGameMessage();
+            if (gameId.activeGame is not null)
+                await Clients.Clients(Games[gameId.activeGame.Value.ToString()].SelectMany(userId => UserConnections[userId]))
+                    .ReceiveOpponentLeftGameMessage();
             var leftGameCommand = new LeftGameCommand(uId);
             await _mediator.Send(leftGameCommand);
         }

@@ -30,5 +30,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<User>()
             .Ignore(x => x.ActiveGame)
             .Ignore(x => x.HasJoinedGame);
+
+        modelBuilder.Entity<Game>()
+            .Property(x => x.GameField)
+            .HasMaxLength(9)
+            .IsFixedLength()
+            .HasDefaultValue("         ");
     }
 }

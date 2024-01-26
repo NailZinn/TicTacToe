@@ -14,4 +14,5 @@ public class Game
     public DateTime CreatedAt { get; set; }
     public GameStatus Status { get; set; }
     public long MaxRating { get; set; }
+    public string GameField { get; set; }
 }

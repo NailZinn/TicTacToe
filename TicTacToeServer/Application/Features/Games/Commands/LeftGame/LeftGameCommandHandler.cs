@@ -19,6 +19,7 @@ public class LeftGameCommandHandler : ICommandHandler<LeftGameCommand>
             .Include(x => x.Player1)
             .Include(x => x.Player2)
             .Include(x => x.Others)
+            .ThenInclude(x => x.AsWatcher)
             .FirstOrDefaultAsync(x =>
                 (x.Player1 != null && x.Player1.Id == request.UserId) ||
                 (x.Player2 != null && x.Player2.Id == request.UserId) ||
