@@ -1,0 +1,10 @@
+.spin {
+    width: 100%;
+    margin-top: 24px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.spin i {
+    background-color: coral !important;
+}
