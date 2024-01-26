@@ -35,6 +35,6 @@ public class ApplicationDbContext : DbContext
             .Property(x => x.GameField)
             .HasMaxLength(9)
             .IsFixedLength()
-            .HasDefaultValue("         ");
+            .HasDefaultValue(Game.DefaultGameField);
     }
 }

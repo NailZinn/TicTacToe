@@ -5,6 +5,7 @@ using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver.Linq;
 
 namespace Application.Features.Games.Commands.JoinGame;
 
@@ -31,6 +32,15 @@ internal class JoinGameCommandHandler : ICommandHandler<JoinGameCommand, bool>
             .Include(x => x.AsPlayer)
             .Include(x => x.AsWatcher)
             .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+        if (user!.AsWatcher is not null)
+        {
+            var watchingGame = await _dbContext.Set<Game>()
+                .Include(x => x.Others)
+                .FirstOrDefaultAsync(x => x.Others.Contains(user), cancellationToken);
+            if (watchingGame?.Player1 is null)
+                user.AsWatcher = null;
+            _dbContext.Set<User>().Update(user);
+        }
         if (user!.HasJoinedGame)
             return false;
         

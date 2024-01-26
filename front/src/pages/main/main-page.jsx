@@ -81,7 +81,7 @@ const MainPage = () => {
                     navigate(`/game/${gameId}`)
                 else 
                 {
-                    showLabelFunc('У вас слишком высокий рейтинг')
+                    showLabelFunc('Игра для вас недоступна')
                     navigate(`/`)
                 }
             })

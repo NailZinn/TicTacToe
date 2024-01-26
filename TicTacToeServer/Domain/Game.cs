@@ -15,4 +15,6 @@ public class Game
     public GameStatus Status { get; set; }
     public long MaxRating { get; set; }
     public string GameField { get; set; }
+
+    public const string DefaultGameField = "         ";
 }

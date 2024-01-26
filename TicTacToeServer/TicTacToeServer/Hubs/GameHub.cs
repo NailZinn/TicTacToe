@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Claims;
 using Application.Features.Games.Commands.ChangeGameField;
 using Application.Features.Games.Commands.LeftGame;
+using Application.Features.Games.Commands.ResetGameField;
 using Application.Features.Games.Commands.SetGameState;
 using Application.Features.Games.Queries.GetGameField;
 using Application.Features.Games.Queries.GetUserActiveGame;
@@ -84,8 +85,13 @@ public class GameHub : Hub<IGameHubClient>
     public Task LeaveGameAsync(string gameId)
     {
         Games[gameId].Remove(GetUserId());
-
         return Task.CompletedTask;
+    }
+
+    public async Task ResetBoard(string gameId)
+    {
+        var resetGameFieldCommand = new ResetGameFieldCommand(int.Parse(gameId));
+        await _mediator.Send(resetGameFieldCommand);
     }
 
     public override Task OnConnectedAsync()

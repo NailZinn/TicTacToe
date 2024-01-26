@@ -67,7 +67,7 @@ const Game = () => {
         })
         connection.on('ReceiveWatcherMessageAsync', (message) => {
             setIsWatcher(true)
-            setBoard(message)
+            setBoard(message.map(x => x === ' ' ? '' : x))
         })
         connection.on('ReceiveGameEventMessage', (message) => {
             board[message.square] = message.symbol
@@ -77,16 +77,21 @@ const Game = () => {
             setPlayerTurn(prev => !prev)
         })
         connection.on('ReceiveOpponentLeftGameMessage', () => {
-            if (isWatcher)
-                console.log('Игра окончена выйди отсюда')
-            else
-                console.log('Твой оппонент отключился')
+            modal.success({
+                title: 'Game finished.',
+                content: 'Player left the game',
+                okText: 'Leave game',
+                onOk: () => {
+                    connection.stop()
+                    navigate('/')
+                }
+            })
         })
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [connection, playerTurn, board])
 
     const updateSquare = (square, value) => {
-        if (!playerTurn || isWatcher || !value) {
+        if (!playerTurn || isWatcher || !value || board[square]) {
             return
         }
         connection.invoke('PlaceSymbolAsync', {
@@ -114,7 +119,7 @@ const Game = () => {
         let reason = 0
         if (!isWatcher) {
             if (winner) {
-                modalMessage = winner === playerSymbol ? 'You win' : 'You lose'
+                modalMessage = winner === playerSymbol ? 'You win. Rating +3' : 'You lose. Rating -1'
                 reason = winner === playerSymbol ? 3 : -1
             } else {
                 modalMessage = 'Draw'
@@ -140,6 +145,8 @@ const Game = () => {
             instance.destroy()
             setBoard(Array(9).fill(''))
             if (!isWatcher) {
+                if (connection.state === 'Connected')
+                    connection.invoke('ResetBoard', gameId)
                 setPlayerSymbol(playerSymbol === 'X' ? 'O' : 'X')
             }
         }, 5000)
