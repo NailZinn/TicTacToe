@@ -1,0 +1,14 @@
+.ratings-container {
+    margin-top: 30px;
+}
+
+.points {
+    width: 30px;
+    text-align: center;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}

@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicTacToeServer", "TicTacToeServer\TicTacToeServer.csproj", "{DAB70B86-2CE0-4E66-A145-9590F397A6D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{E52E28D6-D5D8-408A-A40F-3B5B601AD4B6}"
+	ProjectSection(SolutionItems) = preProject
+		..\docker-compose.yml = ..\docker-compose.yml
+		Dockerfile = Dockerfile
+		..\front\FrontDockerfile = ..\front\Dockerfile
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{9F3E2D1F-FDD8-4831-A108-984EB2439FD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{57CD4BC2-C60D-481E-862B-A2AC6220192B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CQRS", "CQRS\CQRS.csproj", "{89234AA6-B297-4D46-B910-6E621021D5B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{72B6AC4C-C5CE-4B4B-BF53-CA9C8F399388}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{BDCA3FF2-E357-4338-ADC6-E371402B3019}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DAB70B86-2CE0-4E66-A145-9590F397A6D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAB70B86-2CE0-4E66-A145-9590F397A6D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAB70B86-2CE0-4E66-A145-9590F397A6D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAB70B86-2CE0-4E66-A145-9590F397A6D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F3E2D1F-FDD8-4831-A108-984EB2439FD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F3E2D1F-FDD8-4831-A108-984EB2439FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F3E2D1F-FDD8-4831-A108-984EB2439FD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F3E2D1F-FDD8-4831-A108-984EB2439FD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57CD4BC2-C60D-481E-862B-A2AC6220192B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57CD4BC2-C60D-481E-862B-A2AC6220192B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57CD4BC2-C60D-481E-862B-A2AC6220192B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57CD4BC2-C60D-481E-862B-A2AC6220192B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89234AA6-B297-4D46-B910-6E621021D5B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89234AA6-B297-4D46-B910-6E621021D5B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89234AA6-B297-4D46-B910-6E621021D5B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89234AA6-B297-4D46-B910-6E621021D5B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72B6AC4C-C5CE-4B4B-BF53-CA9C8F399388}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72B6AC4C-C5CE-4B4B-BF53-CA9C8F399388}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72B6AC4C-C5CE-4B4B-BF53-CA9C8F399388}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72B6AC4C-C5CE-4B4B-BF53-CA9C8F399388}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDCA3FF2-E357-4338-ADC6-E371402B3019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDCA3FF2-E357-4338-ADC6-E371402B3019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDCA3FF2-E357-4338-ADC6-E371402B3019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDCA3FF2-E357-4338-ADC6-E371402B3019}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

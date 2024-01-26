@@ -1,0 +1,44 @@
+.header {
+    position: fixed;
+    top: 0;
+    height: 50px;
+    width: 100%;
+    background-color: coral;
+}
+
+.logout {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    font-family: cursive;
+    font-size: 20px;
+    font-weight: 700;
+    color: bisque;
+    cursor: pointer;
+}
+
+.game-title {
+    width: 200px;
+    font-family: cursive;
+    font-size: 30px;
+    font-weight: 700;
+    color: bisque;
+    text-align: center;
+    margin-top: 4px;
+    margin-left: auto;
+    margin-right: auto;
+    cursor: pointer;
+}
+
+.game-title:hover, .logout:hover {
+    color: white;
+}
+
+.body {
+    display: flow-root;
+    min-height: calc(100vh - 50px);
+    height: auto;
+    width: 100%;
+    background-color: bisque;
+    margin-top: 50px;
+}
