@@ -23,7 +23,7 @@ const Authentication = () => {
             .then(_ => navigate('/'))
             .catch(({ response }) => {
                 modal.error({
-                    title: `Could not authenticate user: ${response.data.errors.map(e => e.description).join(', ')}`
+                    title: `Could not authenticate user: ${response?.data?.errors?.map(e => e.description)?.join(', ') ?? 'something went wrong'}`
                 })
             })
     }

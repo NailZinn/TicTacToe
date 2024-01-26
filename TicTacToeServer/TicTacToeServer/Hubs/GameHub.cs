@@ -26,10 +26,6 @@ public class GameHub : Hub<IGameHubClient>
                 return value;
             });
 
-        Console.WriteLine(Games.Count);
-        Console.WriteLine(Games[gameId].Count);
-        Console.WriteLine(GetUserId());
-
         if (!newPlayer)
         {
             return;

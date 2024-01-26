@@ -18,13 +18,11 @@ const Authorization = () => {
     }
 
     const sendForm = (values) => {
-        axios.post(`auth/login`, values)
-            .then(_ => {
-                navigate('/')
-            })
+        axios.post(`/auth/login`, values)
+            .then(_ => navigate('/'))
             .catch(({ response }) => {
                 modal.error({
-                    title: `Could not authorize user: ${response.data.errors.map(e => e.description).join(', ')}`
+                    title: `Could not authorize user: ${response?.data?.errors?.map(e => e.description)?.join(', ') ?? 'something went wrong'}`
                 })
             })
     }

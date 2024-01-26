@@ -45,13 +45,16 @@ const Game = () => {
         connection.off('ReceiveWatcherMessageAsync')
         connection.off('ReceiveGameEventMessage')
         connection.on('ReceiveStartMessageAsync', (message) => {
+            console.log(message)
             setPlayerSymbol(message.playerSymbol)
             setPlayerTurn(message.playerTurn)
         })
         connection.on('ReceiveWatcherMessageAsync', () => {
+            console.log('you watcher')
             setIsWatcher(true)
         })
         connection.on('ReceiveGameEventMessage', (message) => {
+            console.log(message)
             board[message.square] = message.symbol;
             setBoard([ ...board ])
             const maybeWinner = calculateWinner()
@@ -62,6 +65,7 @@ const Game = () => {
     }, [connection, playerTurn])
 
     const updateSquare = (square, value) => {
+        console.log(playerTurn, isWatcher, value)
         if (!playerTurn || isWatcher || !value) {
             return
         }
