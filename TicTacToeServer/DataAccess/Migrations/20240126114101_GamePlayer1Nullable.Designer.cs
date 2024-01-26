@@ -3,6 +3,7 @@ using System;
 using DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240126114101_GamePlayer1Nullable")]
+    partial class GamePlayer1Nullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,18 +42,12 @@ namespace DataAccess.Migrations
                     b.Property<Guid?>("Player1Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("Player2Id")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Player1Id")
-                        .IsUnique();
-
-                    b.HasIndex("Player2Id")
                         .IsUnique();
 
                     b.ToTable("Games");
@@ -63,6 +60,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("AsPlayerId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("AsWatcherId")
@@ -109,6 +109,9 @@ namespace DataAccess.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AsPlayerId")
+                        .IsUnique();
+
                     b.HasIndex("AsWatcherId");
 
                     b.ToTable("Users");
@@ -120,20 +123,20 @@ namespace DataAccess.Migrations
                         .WithOne("AsOwner")
                         .HasForeignKey("Domain.Game", "Player1Id");
 
-                    b.HasOne("Domain.User", "Player2")
-                        .WithOne("AsPlayer")
-                        .HasForeignKey("Domain.Game", "Player2Id");
-
                     b.Navigation("Player1");
-
-                    b.Navigation("Player2");
                 });
 
             modelBuilder.Entity("Domain.User", b =>
                 {
+                    b.HasOne("Domain.Game", "AsPlayer")
+                        .WithOne("Player2")
+                        .HasForeignKey("Domain.User", "AsPlayerId");
+
                     b.HasOne("Domain.Game", "AsWatcher")
                         .WithMany("Others")
                         .HasForeignKey("AsWatcherId");
+
+                    b.Navigation("AsPlayer");
 
                     b.Navigation("AsWatcher");
                 });
@@ -141,13 +144,13 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("Domain.Game", b =>
                 {
                     b.Navigation("Others");
+
+                    b.Navigation("Player2");
                 });
 
             modelBuilder.Entity("Domain.User", b =>
                 {
                     b.Navigation("AsOwner");
-
-                    b.Navigation("AsPlayer");
                 });
 #pragma warning restore 612, 618
         }

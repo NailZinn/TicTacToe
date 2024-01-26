@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Security.Claims;
+using Application.Features.Games.Commands.LeftGame;
 using Application.Features.Games.Commands.SetGameState;
 using Application.Features.Games.Queries.GetUserActiveGame;
 using Domain;
@@ -91,11 +92,17 @@ public class GameHub : Hub<IGameHubClient>
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var getUserActiveGameQuery = new GetUserActiveGameQuery(Guid.Parse(GetUserId()));
+        var uId = Guid.Parse(GetUserId());
+        var getUserActiveGameQuery = new GetUserActiveGameQuery(uId);
         var gameId = await _mediator.Send(getUserActiveGameQuery);
         if (gameId is not null)
+        {
             await Clients.Clients(Games[gameId.Value.ToString()].SelectMany(userId => UserConnections[userId]))
                 .ReceiveOpponentLefGameMessage();
+            var leftGameCommand = new LeftGameCommand(uId);
+            await _mediator.Send(leftGameCommand);
+        }
+
         UserConnections[GetUserId()].Remove(Context.ConnectionId);
     }
 

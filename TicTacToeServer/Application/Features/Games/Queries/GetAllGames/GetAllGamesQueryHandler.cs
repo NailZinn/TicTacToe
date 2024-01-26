@@ -26,11 +26,12 @@ internal class GetAllGamesQueryHandler : IQueryHandler<GetAllGamesQuery, Paginat
             .ThenBy(x => x.Status)
             .Paginate(page, request.PageSize)
             .Include(x => x.Player1)
+            .Where(x => x.Player1 != null)
             .AsEnumerable();
         var count = _dbContext.Set<Game>().Count();
         return Task.FromResult(new PaginationWrapper<GameBriefResponse>(
             data.Select(game =>
-                new GameBriefResponse(game.Id, game.Player1.UserName!, game.CreatedAt, game.Status, game.MaxRating)),
+                new GameBriefResponse(game.Id, game.Player1!.UserName!, game.CreatedAt, game.Status, game.MaxRating)),
             page, request.PageSize, count));
     }
 }
