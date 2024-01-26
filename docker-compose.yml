@@ -28,7 +28,8 @@ services:
     image: tictactoeserver
     container_name: TicTacToeServer
     ports:
-      - "7289:80"
+      - "7051:80"
+    restart: always
     environment:
       - ConnectionStrings__Postgres=User ID=root;Password=myPassword;Host=postgres;Port=5432;Database=myDB;Pooling=true;Connection Lifetime=0;
       - ConnectionStrings__RabbitMq=amqp://admin:admin@rabbitmq:5672
@@ -36,6 +37,7 @@ services:
       - JwtSettings__Issuer=TicTacToeServer
       - JwtSettings__Audience=TicTacToeServer
       - JwtSettings__Key=somEverYsecuReandsecRetkeYforjWt
+      - ASPNETCORE_URLS=http://+:80
     build:
       context: ./TicTacToeServer
       dockerfile: Dockerfile

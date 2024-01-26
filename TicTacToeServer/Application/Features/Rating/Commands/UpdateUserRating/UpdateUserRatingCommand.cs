@@ -4,4 +4,4 @@ using CQRS.Abstractions;
 
 namespace Application.Features.Rating.Commands.UpdateUserRating;
 
-public record UpdateUserRatingCommand(RatingUpdateReason Reason) : ICommand<UserRatingResponse?>;
+public record UpdateUserRatingCommand(Guid UserId, RatingUpdateReason Reason) : ICommand<UserRatingResponse?>;
