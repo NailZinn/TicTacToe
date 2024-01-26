@@ -26,6 +26,10 @@ public class GameHub : Hub<IGameHubClient>
                 return value;
             });
 
+        Console.WriteLine(Games.Count);
+        Console.WriteLine(Games[gameId].Count);
+        Console.WriteLine(GetUserId());
+
         if (!newPlayer)
         {
             return;
@@ -41,13 +45,13 @@ public class GameHub : Hub<IGameHubClient>
             var messageForSender = new StartGameMessage(symbols[currentPlayerSymbolIndex], currentPlayerTurn);
             var messageForReceiver = new StartGameMessage(symbols[1 - currentPlayerSymbolIndex], !currentPlayerTurn);
 
-            await Clients.User(GetUserId()).ReceiveStartMessageAsync(messageForSender);
-            await Clients.Users(UserConnections[Games[gameId].First(x => x != GetUserId())])
+            await Clients.Clients(UserConnections[GetUserId()]).ReceiveStartMessageAsync(messageForSender);
+            await Clients.Clients(UserConnections[Games[gameId].First(x => x != GetUserId())])
                 .ReceiveStartMessageAsync(messageForReceiver);
         }
         else if (Games[gameId].Count > 2)
         {
-            await Clients.User(GetUserId()).ReceiveWatcherMessageAsync();
+            await Clients.Clients(UserConnections[GetUserId()]).ReceiveWatcherMessageAsync();
         }
         else
         {
@@ -57,7 +61,8 @@ public class GameHub : Hub<IGameHubClient>
 
     public async Task PlaceSymbolAsync(GameEventMessage message)
     {
-        await Clients.Users(Games[message.GameId]).ReceiveGameEventMessage(message);
+        await Clients.Clients(Games[message.GameId].SelectMany(userId => UserConnections[userId]))
+            .ReceiveGameEventMessage(message);
     }
 
     public override Task OnConnectedAsync()
