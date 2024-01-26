@@ -83,7 +83,7 @@ const Game = () => {
                 console.log('Твой оппонент отключился')
         })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [connection, playerTurn])
+    }, [connection, playerTurn, board])
 
     const updateSquare = (square, value) => {
         if (!playerTurn || isWatcher || !value) {
@@ -141,7 +141,6 @@ const Game = () => {
             setBoard(Array(9).fill(''))
             if (!isWatcher) {
                 setPlayerSymbol(playerSymbol === 'X' ? 'O' : 'X')
-                setPlayerTurn(prev => !prev)
             }
         }, 5000)
         axios.put(`/rating?reason=${reason}`)
