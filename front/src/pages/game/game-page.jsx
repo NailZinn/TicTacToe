@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Modal } from 'antd'
+import { useState, useEffect, useRef } from 'react'
+import { Modal, Form, Input, Button } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { HttpTransportType, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr'
 import { axiosInstance as axios } from '../../axios'
@@ -16,8 +16,11 @@ const Game = () => {
     const [playerSymbol, setPlayerSymbol] = useState(null)
     const [playerTurn, setPlayerTurn] = useState(false)
     const [isWatcher, setIsWatcher] = useState(false)
+    const [messages, setMessages] = useState([])
 
+    const [form] = Form.useForm()
     const [modal, modalHolder] = Modal.useModal()
+    const messagesEnd = useRef(null)
 
     const gameId = useLocation().pathname.split('/')[2] 
 
@@ -61,13 +64,16 @@ const Game = () => {
         connection.off('ReceiveWatcherMessageAsync')
         connection.off('ReceiveGameEventMessage')
         connection.off('ReceiveOpponentLeftGameMessage')
+        connection.off('ReceiveGameChatMessageAsync')
         connection.on('ReceiveStartMessageAsync', (message) => {
             setPlayerSymbol(message.playerSymbol)
             setPlayerTurn(message.playerTurn)
+            setMessages(message.gameMessages)
         })
-        connection.on('ReceiveWatcherMessageAsync', (message) => {
+        connection.on('ReceiveWatcherMessageAsync', (message, gameChat) => {
             setIsWatcher(true)
             setBoard(message)
+            setMessages(gameChat)
         })
         connection.on('ReceiveGameEventMessage', (message) => {
             board[message.square] = message.symbol
@@ -82,8 +88,17 @@ const Game = () => {
             else
                 console.log('Твой оппонент отключился')
         })
+        connection.on('ReceiveGameChatMessageAsync', (message) => {
+            setMessages(prev => [ ...prev, message ])
+        })
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [connection, playerTurn, board])
+
+    useEffect(() => {
+        if (messagesEnd) {
+            messagesEnd.current?.scrollIntoView({ behavior: 'smooth' })
+        }
+    }, [messages])
 
     const updateSquare = (square, value) => {
         if (!playerTurn || isWatcher || !value) {
@@ -147,8 +162,44 @@ const Game = () => {
             .catch(_ => console.log('something went wrong'))
     }
 
+    const sendMessage = (values) => {
+        form.setFieldValue('message', undefined)
+        connection?.state === HubConnectionState.Connected && connection.invoke('SendMessageAsync', {
+            gameId: gameId,
+            message: values.message
+        })
+    }
+
     return (
         <>
+            <div className='game-chat'>
+                <div className='game-chat-container'>
+                    <div className='message-list'>                        
+                        {
+                            messages.map((x, i) => (
+                                <div 
+                                    key={ i } 
+                                    className='chat-message'
+                                    style={{ color: playerSymbol === 'X' ? 'cadetblue' : 'crimson' }}>
+                                    { x }
+                                </div>
+                            ))
+                        }
+                        <div ref={ messagesEnd }></div>
+                    </div>                  
+                    <Form form={ form } onFinish={ sendMessage }>
+                        <Form.Item name='message' rules={[{
+                            required: true,
+                            message: 'entere message'
+                        }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item hidden>
+                            <Button htmlType='submit'></Button>
+                        </Form.Item>
+                    </Form>
+                </div>
+            </div>
             <div className='game-field'>
                 <div className='game-field-row'>
                     <GameCell 
