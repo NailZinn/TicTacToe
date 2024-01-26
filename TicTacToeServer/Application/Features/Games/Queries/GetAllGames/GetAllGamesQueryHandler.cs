@@ -22,7 +22,7 @@ internal class GetAllGamesQueryHandler : IQueryHandler<GetAllGamesQuery, Paginat
         var page = request.Page;
         if (page <= 0) page = 1;
         var data = _dbContext.Set<Game>()
-            .OrderBy(x => x.CreatedAt)
+            .OrderByDescending(x => x.CreatedAt)
             .ThenBy(x => x.Status)
             .Paginate(page, request.PageSize)
             .Include(x => x.Player1)

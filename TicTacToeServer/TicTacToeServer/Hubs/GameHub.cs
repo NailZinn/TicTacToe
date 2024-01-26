@@ -110,8 +110,11 @@ public class GameHub : Hub<IGameHubClient>
         if (gameId.joinedGame is not null)
         {
             if (gameId.activeGame is not null)
+            {
                 await Clients.Clients(Games[gameId.activeGame.Value.ToString()].SelectMany(userId => UserConnections[userId]))
                     .ReceiveOpponentLeftGameMessage();
+            }
+            Games[gameId.joinedGame.Value.ToString()].Remove(GetUserId());
             var leftGameCommand = new LeftGameCommand(uId);
             await _mediator.Send(leftGameCommand);
         }

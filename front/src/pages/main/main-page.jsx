@@ -53,7 +53,7 @@ const MainPage = () => {
         }
     }
     const fetchGames = (e) => {
-        if (e.currentTarget.scrollTop >= 185 + numberOfFetches * 45) {
+        if (e.currentTarget.scrollTop >= 185 + numberOfFetches * 45 * pageSize) {
             fetchGamesAxios()
         }
     }

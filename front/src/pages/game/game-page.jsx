@@ -65,8 +65,9 @@ const Game = () => {
             setPlayerSymbol(message.playerSymbol)
             setPlayerTurn(message.playerTurn)
         })
-        connection.on('ReceiveWatcherMessageAsync', () => {
+        connection.on('ReceiveWatcherMessageAsync', (message) => {
             setIsWatcher(true)
+            setBoard(message)
         })
         connection.on('ReceiveGameEventMessage', (message) => {
             board[message.square] = message.symbol
